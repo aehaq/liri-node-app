@@ -1,18 +1,91 @@
 require("dotenv").config()
 
+var fs = require('fs')
 var keys = require('./keys.js')
 var request = require("request")
-
-// var spotify = new Spotify(keys.spotify)
+var moment = require('moment')
+var Spotify = require('node-spotify-api');
+var spotify = new Spotify(keys.spotify)
 
 var command = process.argv[2];
 
 function spotifyThis() {
 
+    var input;
+    var array = process.argv
+    if (process.argv[3]) {
+        input = process.argv[3];
+        //If the user writes a track name with multiple words, they will be appended here.
+        for (let i = 4; i < array.length; i++) {
+            input += " " + array[i]
+        }
+    } else {
+        //If the user fails to write an artist name, we notify them we needed the input..
+        input = "the sign Ace"
+    }
+    //Search the spotify api 
+    spotify.search({ type: 'track', query: input }, function(err, data) {
+
+        if (err) {
+          return console.log('Error occurred: ' + err);
+        }
+
+        var result = data.tracks.items[0]
+
+        var artist = result.artists
+        for (let i = 0; i < artist.length; i++) {
+            console.log(artist[i].name)
+        }
+        console.log(result.name)
+        if (result.preview_url) {
+            console.log(result.preview_url)
+        } else {
+            console.log("No Preview Available")
+        }
+        console.log(result.album.name)
+    });
+
 }
 
 function concertThis() {
-
+    //Set up artist input for bandsintown call url
+    var artist;
+    var array = process.argv
+    if (process.argv[3]) {
+        artist = process.argv[3];
+        //If the user writes an artist name with multiple words, they will be appended here.
+        for (let i = 4; i < array.length; i++) {
+            artist += "+" + array[i]
+        }
+        
+        //Create the api request url
+        var queryUrl = "https://rest.bandsintown.com/artists/" + artist + "/events?app_id=codingbootcamp";
+        
+        //Run the api request
+        request(queryUrl, function(error, response, body) {
+            if (!error && response.statusCode === 200) {
+                console.log("--------------")
+                var results = JSON.parse(body);
+                
+                for (let i = 0; i < results.length; i++) {
+                    var event = results[i];
+                    console.log(event.venue.name)
+                    console.log(event.venue.city +", "+ event.venue.country)
+                    var time = event.datetime
+                    var date = time.substring(0,10)
+                    date = moment(date, "YYYY-MM-DD")
+                    console.log(date.format("MM/DD/YYYY"))
+                    console.log("--------------")
+                }
+            } else {
+                console.log(error)
+            }
+        })
+        
+    } else {
+        //If the user fails to write an artist name, we notify them we needed the input..
+        console.log("You forgot to ask for an artist!")
+    }
 }
 
 function movieThis() {
@@ -29,13 +102,14 @@ function movieThis() {
         //If the user fails to write a movie name, it will return results for mr. nobody.
         movie = "Mr+Nobody"
     }
-
+    
     //Create the api request url
     var queryUrl = "http://www.omdbapi.com/?t=" + movie + "&y=&plot=short&apikey=40e9cece";
-
+    
     //Run the api request
     request(queryUrl, function(error, response, body) {
         if (!error && response.statusCode === 200) {
+            console.log("--------------")
             omdb = JSON.parse(body);
             console.log(omdb.Title)
             console.log(omdb.Year)
@@ -50,6 +124,37 @@ function movieThis() {
 }
 
 function doIt() {
+    var input;
+    
+    fs.readFile("random.txt", "utf8", function(error, data) {
+        if (error) {
+            return console.log(error);
+        }
+        // console.log(data)
+        var song = data.split(',')[1];
+        input = song.replace(/['"]+/g, '')
+
+        spotify.search({ type: 'track', query: input }, function(err, data) {
+    
+            if (err) {
+              return console.log('Error occurred: ' + err);
+            }
+    
+            var result = data.tracks.items[0]
+    
+            var artist = result.artists
+            for (let i = 0; i < artist.length; i++) {
+                console.log(artist[i].name)
+            }
+            console.log(result.name)
+            if (result.preview_url) {
+                console.log(result.preview_url)
+            } else {
+                console.log("No Preview Available")
+            }
+            console.log(result.album.name)
+        });
+    })
 
 }
 
