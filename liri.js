@@ -20,7 +20,7 @@ function spotifyThis() {
             input += " " + array[i]
         }
     } else {
-        //If the user fails to write an artist name, we notify them we needed the input..
+        //If the user fails to write an artist name, we return "The Sign" by Ace is Base..
         input = "the sign Ace"
     }
     //Search the spotify api 
@@ -30,15 +30,18 @@ function spotifyThis() {
           return console.log('Error occurred: ' + err);
         }
 
+        // Return the desired results to the console
         var result = data.tracks.items[0]
 
+        // If multiple artists, we return each one.
         var artist = result.artists
         for (let i = 0; i < artist.length; i++) {
             console.log(artist[i].name)
         }
+        // If preview url is available we return it, otherwise we note its unavailability.
         console.log(result.name)
         if (result.preview_url) {
-            console.log(result.preview_url)
+            console.log("Preview URL: "+result.preview_url)
         } else {
             console.log("No Preview Available")
         }
@@ -72,8 +75,10 @@ function concertThis() {
                     console.log(event.venue.name)
                     console.log(event.venue.city +", "+ event.venue.country)
                     var time = event.datetime
+                    // Grab the necessary parts of the date to convert it into a moment date
                     var date = time.substring(0,10)
                     date = moment(date, "YYYY-MM-DD")
+                    // Print a reformatted date to the console.
                     console.log(date.format("MM/DD/YYYY"))
                     console.log("--------------")
                 }
@@ -125,12 +130,12 @@ function movieThis() {
 
 function doIt() {
     var input;
-    
+    // Pull the information from the random.txt file
     fs.readFile("random.txt", "utf8", function(error, data) {
         if (error) {
             return console.log(error);
         }
-        // console.log(data)
+        // Reformat the pulled input so that it works with our spotify call.
         var song = data.split(',')[1];
         input = song.replace(/['"]+/g, '')
 
@@ -158,6 +163,7 @@ function doIt() {
 
 }
 
+// Run the corresponding functions based off of the user input
 if (command === "concert-this") {
     concertThis();
 }
