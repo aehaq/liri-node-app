@@ -50,7 +50,7 @@ This command will tell Liri to search spotify for "I want it that way" by Backst
 - dotENV
 
 # Code Snippets
-```
+```JavaScript
 function spotifyThis() {
 
     var input;
